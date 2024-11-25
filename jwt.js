@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+require("dotenv").config();
 
 // Helper: Base64URL Encode/Decode
 
@@ -34,7 +35,7 @@ function hash(payload, secret, header) {
 //Test
 const header1 = { alg: "HS256", typ: "JWT" }; // Customizable
 const payload1 = { userId: 123, exp: Math.floor(Date.now() / 1000) + 60 }; // Custom payload
-const secret1 = "my-secret-key";
+const secret1 = process.env.SECRET; // Secret from environment variable
 
 console.log("Hash:", hash(payload1, secret1, header1));
 
@@ -65,3 +66,38 @@ function jwtSign(payload, secret, header = { alg: "HS256", typ: "JWT" }) {
   console.log("Generated Secret:", mySecret2);
   const token2 = jwtSign(payload2, mySecret2, header2);
   console.log("JWT:", token2);
+
+  
+  // Simulate jwt.verify()
+function jwtVerify(token, secret) {
+  const [encodedHeader, encodedPayload, signature] = token.split(".");
+
+  if (!encodedHeader || !encodedPayload || !signature) {
+    return { valid: false, error: "Malformed token" };
+  }
+
+  // Decode header and payload
+  const header = JSON.parse(base64UrlDecode(encodedHeader));
+  const payload = JSON.parse(base64UrlDecode(encodedPayload));
+
+  // Recreate signature
+  const validSignature = hash(payload, secret, header);
+
+  // Compare signatures
+  if (validSignature !== signature) {
+    return { valid: false, error: "Invalid signature" };
+  }
+
+  return { valid: true, payload: payload };
+}
+
+const payload = { userId: 123, username: "Matti" };
+const header = { alg: "HS256", typ: "JWT" }; // Customizable
+console.log("Generated Secret:", mySecret);
+
+const token = jwtSign(payload, mySecret, header);
+console.log("JWT:", token);
+
+
+// Example Usage
+console.log(jwtVerify(token, mySecret)); // Should return: { valid: true, payload: { userId: 123, userName: "Matti" } }
