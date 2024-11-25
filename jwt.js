@@ -42,3 +42,26 @@ console.log("Hash:", hash(payload1, secret1, header1));
 // generate a strong secret
 const mySecret = require("crypto").randomBytes(64).toString("hex");
 console.log("Generated Secret:", mySecret); // Example strong secret
+
+
+// Simulate jwt.sign()
+function jwtSign(payload, secret, header = { alg: "HS256", typ: "JWT" }) {
+    // Step 1: Encode header and payload to Base64URL
+    const encodedHeader = base64UrlEncode(JSON.stringify(header));
+    const encodedPayload = base64UrlEncode(JSON.stringify(payload));
+  
+    // Step 2: Create a signature using the encoded header, payload, and secret
+    const signature = hash(payload, secret, header);
+  
+    // Step 3: Combine all parts into the JWT structure
+    return `${encodedHeader}.${encodedPayload}.${signature}`;
+  }
+  
+  // Example Usage
+  const payload2 = { userId: 123, exp: Math.floor(Date.now() / 1000) + 60 }; // Expires in 60 seconds
+  const mySecret2 = require("crypto").randomBytes(64).toString("hex"); // Strong secret
+  const header2 = { alg: "HS256", typ: "JWT" }; // Customizable
+  
+  console.log("Generated Secret:", mySecret2);
+  const token2 = jwtSign(payload2, mySecret2, header2);
+  console.log("JWT:", token2);
